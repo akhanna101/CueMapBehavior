@@ -11,7 +11,7 @@ MAP = reshape(1:prod(gridsize),gridsize(1),gridsize(2));
 
 RW_file = 'E:/Cue Map/Pi_030719_Run/RWLists';
 
-save_folder = 'E:/Cue Map/Pi_030719_Run/Lists';
+save_folder = 'E:/Cue Map/Pi_030719_Run/Lists2';
 
 rew_loc = [sub2ind([12 12],3,3) sub2ind([12 12],10,6) sub2ind([12 12],6,10)];
     
@@ -92,11 +92,15 @@ end
 %Counterbalance rats by direction of tones and clicks. There are four
 %groups - tones increasing and clicks decreasing; vice versa, and the axes flipped for both
 
+%This keeps track of all lists and block info
+LISTS = struct;
+
 for i = 1:24%days
     %The counterbalancing repeats every 8 days
     cb = mod(i,8);
     cb(cb==0)=8;
-    L = [];
+    L = []; %the list of vertices
+    BL = []; %BL keeps track of what list is used
     %CB_Mat = Unique_Rand_Mat(blocks)
     for j = 1:blocks
         
@@ -119,6 +123,7 @@ for i = 1:24%days
                         fprintf('%d,%d,%d',cb,j,m)
                     end    
                     L = cat(1,L,NewL);
+                    BL = cat(1,BL,repmat({'RW'},size(NewL)));
                     
                 case 2 %Vertical Block
                     NewL = cat(1,List.Vert{V{cb}(j,1)}(:),List.Vert{V{cb}(j,2)}(:));
@@ -130,6 +135,7 @@ for i = 1:24%days
                         fprintf('%d,%d,%d',cb,j,m)
                     end  
                     L = cat(1,L,NewL);
+                    BL = cat(1,BL,repmat({strcat('V',num2str(V{cb}(j,1)))},size(NewL)));
                     
                 case 3 %Horizontal Block
                     NewL = cat(1,List.Horz{H{cb}(j,1)}(:),List.Horz{H{cb}(j,2)}(:));
@@ -141,7 +147,7 @@ for i = 1:24%days
                         fprintf('%d,%d,%d',cb,j,m)
                     end  
                     L = cat(1,L,NewL);
-                    
+                    BL = cat(1,BL,repmat({strcat('H',num2str(H{cb}(j,1)))},size(NewL)));
             end
         end
     end
@@ -167,8 +173,24 @@ for i = 1:24%days
         end    
         savelist(Lk,RewardLoc,k,i);
     end
-    
+    %Block information needs to be saved for data analysis purposes. This
+    %can be output into a txt file. Yet this code is not written. Currently
+    %all list and block information are saved as an .m file
+    LISTS(i).List = L;
+    LISTS(i).Block = BL;
+    %save_ref_list(L,BL,RewardLoc,1,i);
 end
+
+%This gets the list mapping for the different lists:
+ListIn = 1:prod(gridsize);
+for k = 1:8
+    [List_Out] = ListTransform(ListIn,k);
+    CounterBalance_Key{k}(:,2) = ListIn;
+    CounterBalance_Key{k}(:,1) = List_Out;
+end
+
+ref_filename = sprintf('%s/LISTS_DAT.mat',save_folder);
+save(ref_filename, 'LISTS','CounterBalance_Key');
 
     function [List_Out] = ListTransform(List_In,type)
         
@@ -265,7 +287,7 @@ end
             if mod(jj,list2counter) == 0
                 inds = list2counter*(floor(jj/list2counter)-1)+1:jj;
                 for kk = 1:4
-                RW_List{kk}(inds) = RW_List{kk}(list2counter*(floor(jj/10)-1)+randperm(list2counter));
+                RW_List{kk}(inds) = RW_List{kk}(list2counter*(floor(jj/list2counter)-1)+randperm(list2counter));
                 end
             end    
         end
@@ -284,6 +306,24 @@ end
             fclose(fileID);
             
         end
+   
+   %This function saves a version of the list which will be used for
+   %analysis, this includes the block information. This currently saves
+   %this information as just an .m file
+%    function [] = save_ref_list(listin,Reward_Loc,ratnum,day)
+%             
+%             
+%             filename = sprintf('%s/List_%d_%d.txt',save_folder,ratnum,day);
+%             save(filename,'
+%             fileID = fopen(filename,'w');
+%             fprintf(fileID,'%5s %d %3s %d\r\n','##Rat',ratnum,'Day',day);
+%             fprintf(fileID,'%10s\r\n','##rewards');
+%             fprintf(fileID,'%d\r\n',Reward_Loc);
+%             fprintf(fileID,'%10s\r\n','##Vertices');
+%             fprintf(fileID,'%d\r\n',listin);
+%             fclose(fileID);
+%             
+%      end
     
     function [Error] = CheckList(L)
         
