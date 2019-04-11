@@ -27,6 +27,7 @@ DAT.outs = cellfun(@(x) all(strcmp(x,'I')),Behavior_Data{2});
 DAT.F = cellfun(@(x) all(strcmp(x,'F')),Behavior_Data{2});
 DAT.state = cellfun(@str2double,Behavior_Data{2});
 
+
 Time_Stamps = round(1000*(Behavior_Data{1} - Behavior_Data{1}(1)));
 
 [response]= Logical_On_Off(Time_Stamps(DAT.ins)/1000, Time_Stamps(DAT.outs)/1000,Time_Stamps(1)/1000,Time_Stamps(end)/1000);
@@ -36,6 +37,7 @@ reward_inds = find(DAT.F);
 
 %This pads the end of state_inds with the end of the session
 state_inds(end+1) = find(strcmp('end',Behavior_Data{2}));
+%state_inds(end+1) = numel(Behavior_Data{2}) + 1;
 
 %MAT is a structure in which the response for each trial is saved in
 %the Response field. The vertices are stored in List and Block info is
@@ -60,7 +62,7 @@ for i = 1:numel(state_inds)-1
     MAT.Response{i} = response(Time_Stamps(state_inds(i)):Time_Stamps(state_inds(i+1)));
     MAT.Rewards(i) = any(reward_inds > state_inds(i) & reward_inds < state_inds(i+1));
     if MAT.Rewards(i) > 0
-        a = 1
+      %  a = 1
     end    
     MAT.Pokes(i) = sum(diff(MAT.Response{i} == 1));
     MAT.Resp_Perc(i) = sum(MAT.Response{i}/numel(MAT.Response{i}));

@@ -1,4 +1,4 @@
-function [ output_args ] = Plot_CM_Py_1_Sess(days)
+function [ output_args ] = Plot_CM_Py_1_Sess(days,rat)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -33,9 +33,15 @@ for i = 1:numel(rat_list_nums)
     day(i) = str2double(rat_list_nums{i}{2});
 end
 
+%Blocks in the MAT struct are: 
+%V : vertical trajectory blocks
+%H : horizontal trajectory blocks
+%R : random walk blocks
+
+
 %This gets the days that should be used
 d_use = ismember(day,days);
-rat_use = rat_num == 6;
+rat_use = rat_num == rat;
 
 Response = cell(1,3);
 Rewards = cell(1,3);
@@ -49,8 +55,8 @@ for i = find(d_use & rat_use)
         Rewards{j} =  cat(1,Rewards{j},Rew{j});
     end    
     
-    [App] = Approach_MAT(MAT); 
-    
+    [App_Tr,App_Tr_Rew] = Approach_MAT(MAT,{'V','H'}); 
+    [App_RW,App_RW_Rew] = Approach_MAT(MAT,{'R'}); 
     break
 end
 
@@ -93,11 +99,23 @@ end
 
 figure
 hold on
-errorbar(-60:1:59,mean(App)*100,ste(App)*100)
-set(gca, 'FontSize',16, 'box','off')
+errorbar(-60:1:59,mean(App_Tr)*100,ste(App_Tr)*100)
+stairs(-.5 + -60:1:59, -10 + mean(App_Tr_Rew)*20,'k','linewidth',1.5)
+set(gca, 'XLim', [-60 59],'FontSize',16, 'box','off')
 plot([0 0], [0 60], '--k')
 xlabel('Trials - Centered at Reward', 'FontSize',16)
 ylabel('Response Percentage','FontSize',16)
+
+
+figure
+hold on
+errorbar(-60:1:59,mean(App_RW)*100,ste(App_RW)*100)
+stairs(-.5 + -60:1:59, -10 + mean(App_RW_Rew)*20,'k','linewidth',1.5)
+set(gca, 'XLim', [-60 59], 'FontSize',16, 'box','off')
+plot([0 0], [0 60], '--k')
+xlabel('Trials - Centered at Reward', 'FontSize',16)
+ylabel('Response Percentage','FontSize',16)
+
 
 end
 
@@ -119,8 +137,8 @@ end
     
     end
 
-    function [Resp,Rew] = Approach_MAT(MAT)
-    Blocks = {'V','H'};
+    function [Resp,Rew] = Approach_MAT(MAT,Blocks)
+    %Blocks = {'V','H'};
     
     rew_inds = find(MAT.Rewards);
     n = 0;
@@ -135,6 +153,7 @@ end
         else
             n = n + 1;
             Resp(n,:) = MAT.Resp_Perc(i-60:i+59);
+            Rew(n,:) = MAT.Rewards(i-60:i+59);
         end    
     end
     
