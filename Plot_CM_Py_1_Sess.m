@@ -1,4 +1,4 @@
-function [ output_args ] = Plot_CM_Py_1_Sess(days,rat)
+function [] = Plot_CM_Py_1_Sess(days,rat)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -121,6 +121,9 @@ end
 
     function [Resp,Rew] = Response_MAT(MAT)
     Blocks = {'R','V','H'};
+    use_range = false(size(MAT.Resp_Perc));
+    use_range(1:144*6) = true;
+    use_range = true(size(MAT.Resp_Perc));
     for j = 1:3
         Resp{j} = [];
         Rew{j} = [];
@@ -129,8 +132,8 @@ end
             %Edit this to get all trials
             v = MAT.Vertices == i;
             
-            Resp{j}(i) = mean(MAT.Resp_Perc(bl & v));
-            Rew{j}(i) = mean(MAT.Rewards(bl & v));
+            Resp{j}(i) = mean(MAT.Resp_Perc(bl & v & use_range));
+            Rew{j}(i) = mean(MAT.Rewards(bl & v & use_range));
         end        
         
     end    

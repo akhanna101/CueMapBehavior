@@ -14,6 +14,16 @@ fileID = fopen(filename);
 header = textscan(fileID, '%s %s', 1);
 Behavior_Data = textscan(fileID, '%f %s');
 
+%The following checks the reward zones for each rat to make sure they match
+%the vertices with 'F'. This can be turned off
+Rew_Zones{1} = [26,69,113];%Rew_Zones{1} = [27,70,114];
+Rew_Zones{2} = [26,69,113];%[34,63,115];
+Rew_Zones{3} = [28,71,115];%[111,82,30];
+Rew_Zones{4} = [26,69,113];%Rew_Zones{4} = [118,75,31];
+Rew_Zones{5} = [39,82,126];%Rew_Zones{5} = [27,114,70];
+Rew_Zones{6} = [15,58,102];%Rew_Zones{6} = [34,155,63];
+
+
 %load the LISTS file which contains the list information for each day
 load('E:/Cue Map/Pi_030719_Run/Lists/LISTS_DAT.mat')
 
@@ -33,7 +43,13 @@ Time_Stamps = round(1000*(Behavior_Data{1} - Behavior_Data{1}(1)));
 [response]= Logical_On_Off(Time_Stamps(DAT.ins)/1000, Time_Stamps(DAT.outs)/1000,Time_Stamps(1)/1000,Time_Stamps(end)/1000);
 
 state_inds = find(~isnan(DAT.state));
+
+check_rews = false;
+
 reward_inds = find(DAT.F);
+if isempty(reward_inds)
+    check_rews = true;
+end    
 
 %This pads the end of state_inds with the end of the session
 state_inds(end+1) = find(strcmp('end',Behavior_Data{2}));
@@ -60,7 +76,13 @@ for i = 1:numel(state_inds)-1
     MAT.Vertices(i) = vertex;
     MAT.Block(i) = LISTS(List_Num).Block(i);
     MAT.Response{i} = response(Time_Stamps(state_inds(i)):Time_Stamps(state_inds(i+1)));
-    MAT.Rewards(i) = any(reward_inds > state_inds(i) & reward_inds < state_inds(i+1));
+    
+    if check_rews
+       MAT.Rewards(i) = any(vertex == (Rew_Zones{Rat_Num}));  
+    else
+        MAT.Rewards(i) = any(reward_inds > state_inds(i) & reward_inds < state_inds(i+1));
+    end
+    
     if MAT.Rewards(i) > 0
       %  a = 1
     end    
