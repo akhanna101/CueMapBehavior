@@ -12,20 +12,35 @@ List_Num = str2double(nums{2});
 %open the file
 fileID = fopen(filename);
 header = textscan(fileID, '%s %s', 1);
+
+%This flag keeps track of whether the old version of the script is being
+%used, or the new version
+old_v = true;
+
+Reward_Zones = cell(1,6);
+%The file structure was changed on April 16th. The reward zones were added
+%to the top of the file
+if all(strcmp(header{1}, 'Reward'))
+   header2 = textscan(fileID, '%s', 3); 
+   RZs = regexp(header2{1},'\d*','Match');
+   Reward_Zones{Rat_Num} = cellfun(@str2double,RZs);
+   old_v = false;
+else
+    %The following checks the reward zones for each rat to make sure they match
+    %the vertices with 'F'. This can be turned off
+    Rew_Zones{1} = [26,69,113];%Rew_Zones{1} = [27,70,114];
+    Rew_Zones{2} = [26,69,113];%[34,63,115];
+    Rew_Zones{3} = [28,71,115];%[111,82,30];
+    Rew_Zones{4} = [26,69,113];%Rew_Zones{4} = [118,75,31];
+    Rew_Zones{5} = [39,82,126];%Rew_Zones{5} = [27,114,70];
+    Rew_Zones{6} = [15,58,102];%Rew_Zones{6} = [34,155,63];
+end   
+
 Behavior_Data = textscan(fileID, '%f %s');
 
-%The following checks the reward zones for each rat to make sure they match
-%the vertices with 'F'. This can be turned off
-Rew_Zones{1} = [26,69,113];%Rew_Zones{1} = [27,70,114];
-Rew_Zones{2} = [26,69,113];%[34,63,115];
-Rew_Zones{3} = [28,71,115];%[111,82,30];
-Rew_Zones{4} = [26,69,113];%Rew_Zones{4} = [118,75,31];
-Rew_Zones{5} = [39,82,126];%Rew_Zones{5} = [27,114,70];
-Rew_Zones{6} = [15,58,102];%Rew_Zones{6} = [34,155,63];
-
-
 %load the LISTS file which contains the list information for each day
-load('E:/Cue Map/Pi_030719_Run/Lists/LISTS_DAT.mat')
+%load('E:/Cue Map/Pi_030719_Run/Lists/LISTS_DAT.mat')
+load('E:/Cue Map/Pi_030719_Run/Lists_RW/LISTS_DAT.mat')
 
 %The actual lists should be taken from the file as the random_walk lists
 %are randomized for different calls to the Cue_Map_Counterbalance
@@ -66,7 +81,11 @@ for i = 1:numel(state_inds)-1
     n = n + 1; 
     
     %The vertices need to be corrected for the counterbalancing:
-    vertex = DAT.state(state_inds(i)) + 1;
+    if old_v
+        vertex = DAT.state(state_inds(i)) + 1;
+    else
+        vertex = DAT.state(state_inds(i));
+    end    
     ind_temp = CounterBalance_Key{Rat_Num}(:,1) == vertex; %#ok<USENS>
     vertex = CounterBalance_Key{Rat_Num}(ind_temp,2);
     MAT.Rat = Rat_Num;
@@ -74,7 +93,15 @@ for i = 1:numel(state_inds)-1
     
 
     MAT.Vertices(i) = vertex;
-    MAT.Block(i) = LISTS(List_Num).Block(i);
+    
+    %When there is only a single block, there is not a cell array of block
+    %info for each vertex, rather LISTS(n).Block is a char array of the
+    %block type
+    if ischar(LISTS(List_Num).Block)
+        MAT.Block{i} = LISTS(List_Num).Block;
+    else    
+        MAT.Block(i) = LISTS(List_Num).Block(i);
+    end    
     MAT.Response{i} = response(Time_Stamps(state_inds(i)):Time_Stamps(state_inds(i+1)));
     
     if check_rews

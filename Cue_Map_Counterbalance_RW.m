@@ -19,7 +19,7 @@ save_folder = 'E:/Cue Map/Pi_030719_Run/Lists_RW';
 
 rew_loc = [34,51,128];
 
-list_num_start = 24;
+list_num_start = 1;
 
 %rew_loc = [sub2ind([12 12],3,3) sub2ind([12 12],10,6) sub2ind([12 12],6,10)];
 
@@ -110,7 +110,7 @@ LISTS = struct;
 RW_tot_count = 0;
 RW_List = RWList();
 
-for i = 1:24%days
+for i = 1:50%days
     %The counterbalancing repeats every 8 days
     cb = mod(i,8);
     cb(cb==0)=8;
@@ -120,7 +120,7 @@ for i = 1:24%days
     %The random walk list is pulled from until its empty, then repeats. j
     %loops though each random walk path (2 visits of each vertex) until the
     %number of blocks for a single day is reached
-    for j = 1:blocks
+    for j = 1:round(blocks/4)
         
         RW_tot_count = RW_tot_count + 1;
         if RW_tot_count > numel(RW_List{1})

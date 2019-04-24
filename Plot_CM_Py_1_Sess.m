@@ -53,12 +53,24 @@ for i = find(d_use & rat_use)
         
         Response{j} = cat(1,Response{j},Resp{j});
         Rewards{j} =  cat(1,Rewards{j},Rew{j});
-    end    
+    end
     
-    [App_Tr,App_Tr_Rew] = Approach_MAT(MAT,{'V','H'}); 
-    [App_RW,App_RW_Rew] = Approach_MAT(MAT,{'R'}); 
+    plot_tr = false;
+    plot_rw = false;
+    
+    if any(strncmp('V',MAT.Block,1) | strncmp('H',MAT.Block,1))
+        [App_Tr,App_Tr_Rew] = Approach_MAT(MAT,{'V','H'}); 
+        plot_tr = true;
+        
+    end
+    if any(strncmp('R',MAT.Block,1))
+        [App_RW,App_RW_Rew] = Approach_MAT(MAT,{'R'}); 
+        plot_rw = true;
+    end
     break
 end
+
+if plot_tr && plot_rw
 
 Titles = {'Random Walk', 'Vertical', 'Horizontal'};
 figure
@@ -89,6 +101,7 @@ xlabel('Tone Frequency', 'FontSize',16)
 ylabel('Click Frequency', 'FontSize',16)
 end
 
+end
 %figure
 % hold on
 % for j = 1:3
@@ -96,7 +109,8 @@ end
 % imagesc(reshape((Rewards{j}),12,12))
 % end
 
-
+if plot_tr
+    
 figure
 hold on
 errorbar(-60:1:59,mean(App_Tr)*100,ste(App_Tr)*100)
@@ -106,7 +120,10 @@ plot([0 0], [0 60], '--k')
 xlabel('Trials - Centered at Reward', 'FontSize',16)
 ylabel('Response Percentage','FontSize',16)
 
+end
 
+if plot_rw
+    
 figure
 hold on
 errorbar(-60:1:59,mean(App_RW)*100,ste(App_RW)*100)
@@ -116,6 +133,7 @@ plot([0 0], [0 60], '--k')
 xlabel('Trials - Centered at Reward', 'FontSize',16)
 ylabel('Response Percentage','FontSize',16)
 
+end
 
 end
 
