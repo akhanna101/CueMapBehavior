@@ -2,6 +2,11 @@ function [MAT] = Import_CM_Py(filename)
 %This function imports cue map data for the CMv1 script
 %   Detailed explanation goes here
 
+%Incase filenames are copied and pasted into the Import_CM_Py function this
+%flips the forward slash to backslash in the string. Backslashes are used
+%to avoid escape in sprintf
+filename(filename == '\') = '/';
+
 %This gets the rat num and list. First get rid of the directory info...
 bs = strfind(filename,'/');
 filen = filename(bs(end)+1:end);
@@ -39,8 +44,8 @@ end
 Behavior_Data = textscan(fileID, '%f %s');
 
 %load the LISTS file which contains the list information for each day
-%load('E:/Cue Map/Pi_030719_Run/Lists/LISTS_DAT.mat')
-load('E:/Cue Map/Pi_030719_Run/Lists_RW/LISTS_DAT.mat')
+load('E:/Cue Map/Pi_030719_Run/Lists/LISTS_DAT.mat')
+%load('E:/Cue Map/Pi_030719_Run/Lists_RW/LISTS_DAT.mat')
 
 %The actual lists should be taken from the file as the random_walk lists
 %are randomized for different calls to the Cue_Map_Counterbalance
