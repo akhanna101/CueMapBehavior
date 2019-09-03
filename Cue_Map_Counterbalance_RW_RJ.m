@@ -1,4 +1,4 @@
-function [] = Cue_Map_Counterbalance_RW()
+function [] = Cue_Map_Counterbalance_RW_RJ()
 %This is an edited version of the Cue_Map_Counterbalance function. This
 %function does not include any vertical or horizontal trajectories and only
 %creates lists based on random walk. Most of the counterbalancing aspects
@@ -15,7 +15,8 @@ MAP = reshape(1:prod(gridsize),gridsize(1),gridsize(2));
 
 RW_file = 'E:/Cue Map/Pi_030719_Run/RWLists';
 
-save_folder = 'E:/Cue Map/Pi_030719_Run/Lists_RW_Patch2';
+%save_folder = 'E:/Cue Map/Pi_030719_Run/Lists_RW_Patch2';
+save_folder = 'E:/Cue Map/Pi_030719_Run/Lists_RW_RJ';
 
 %rew_loc = [34,51,128];
 rew_loc = [19,32,98];
@@ -154,19 +155,10 @@ for i = 1:50%days
             corners(end) = [];
             
         else
-            NewL = randperm(prod(gridsize));
-            L = cat(1,L,NewL);
-            
-            
-            
-        for k = 1:4
-           
-            %this gets the new random walk path to be added to the session
-            %list L
-           NewL = RW_List{corners(k)}{RW_tot_count}; 
-            
-           L = cat(1,L,NewL); 
-        end     
+            NewL = repmat(1:prod(gridsize),1,2);
+            NewL = NewL(randperm(numel(NewL)))';
+        end    
+            L = cat(1,L,NewL);    
     end    
         
     %This goes through and double checks the list to make sure there are no
@@ -363,17 +355,21 @@ save(ref_filename, 'LISTS','CounterBalance_Key');
         %Check whether there are any jumps in the list that are not at a
         %the end of a single pass through the space (no jumps between
         %multiples of the total number of vertices (144 for 12x12) 
-        D_Check = [-1 1 -12 12];
-        Jump = false;
         
-        for q = 2:numel(L)
-            if ~any(L(q) + D_Check == L(q-1))
-                if mod(q,prod(gridsize)) ~= 1
-                    Jump = True;
-                    break
-                end   
-            end
-        end
-        Error = Unequal_Travels || Jump;
+        %%%%This section is not used for random jump list creations
+        
+%         D_Check = [-1 1 -12 12];
+%         Jump = false;
+%         
+%         for q = 2:numel(L)
+%             if ~any(L(q) + D_Check == L(q-1))
+%                 if mod(q,prod(gridsize)) ~= 1
+%                     Jump = True;
+%                     break
+%                 end   
+%             end
+%         end
+%         Error = Unequal_Travels || Jump;
+        Error = Unequal_Travels;
     end   
 end

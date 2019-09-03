@@ -46,6 +46,7 @@ Behavior_Data = textscan(fileID, '%f %s');
 %load the LISTS file which contains the list information for each day
 load('E:/Cue Map/Pi_030719_Run/Lists/LISTS_DAT.mat')
 %load('E:/Cue Map/Pi_030719_Run/Lists_RW/LISTS_DAT.mat')
+%load('E:/Cue Map/Pi_030719_Run/Lists_Ext_Traj_1_4/LISTS_DAT2.mat')
 
 %The actual lists should be taken from the file as the random_walk lists
 %are randomized for different calls to the Cue_Map_Counterbalance
@@ -102,6 +103,17 @@ for i = 1:numel(state_inds)-1
     %When there is only a single block, there is not a cell array of block
     %info for each vertex, rather LISTS(n).Block is a char array of the
     %block type
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    %NEED TO CHANGE BACK!!!
+    
+    List_Num = 1;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    
     if ischar(LISTS(List_Num).Block)
         MAT.Block{i} = LISTS(List_Num).Block;
     else    

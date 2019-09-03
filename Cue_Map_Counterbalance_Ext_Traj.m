@@ -1,4 +1,4 @@
-function [] = Cue_Map_Counterbalance_RW()
+function [] = Cue_Map_Counterbalance_Ext_Traj()
 %This is an edited version of the Cue_Map_Counterbalance function. This
 %function does not include any vertical or horizontal trajectories and only
 %creates lists based on random walk. Most of the counterbalancing aspects
@@ -15,10 +15,9 @@ MAP = reshape(1:prod(gridsize),gridsize(1),gridsize(2));
 
 RW_file = 'E:/Cue Map/Pi_030719_Run/RWLists';
 
-save_folder = 'E:/Cue Map/Pi_030719_Run/Lists_RW_Patch2';
+save_folder = 'E:/Cue Map/Pi_030719_Run/Lists_Ext_Traj_1_4';
 
-%rew_loc = [34,51,128];
-rew_loc = [19,32,98];
+rew_loc = [34,51,128];
 
 list_num_start = 1;
 
@@ -49,6 +48,8 @@ List = HVList();
 %top right corner = 3
 %bottom right corner = 4
 
+Traj_Ext_List = [1 2 2 1 2 1 1 2;2 1 1 2 1 2 2 1];
+Traj_Ext_Corner = [4 1 4 1 4 1 4 1;1 4 1 4 1 4 1 4];
 RW{1} = [1; 4; 4; 1];
 RW{2} = [4; 1; 2; 3];
 RW{3} = [2; 3; 3; 2];
@@ -95,12 +96,7 @@ Block_Counter{5} = [2 3 1; 3 2 1; 3 1 2; 1 2 3];
 Block_Counter{6} = [3 1 2; 1 3 2; 1 3 2; 2 1 3];
 Block_Counter{7} = [1 3 2; 2 1 3; 3 2 1; 3 2 1];
 Block_Counter{8} = [2 1 3; 1 3 2; 2 1 3; 3 2 1];
-
-%This keeps track of which random walk list is currently being used
-for i = 1:4
-    RWn(i) = 0;
-end
-%Counterbalance rats by direction of tones and clicks. There are four
+%balance rats by direction of tones and clicks. There are four
 %groups - tones increasing and clicks decreasing; vice versa, and the axes flipped for both
 
 %This keeps track of all lists and block info
@@ -111,70 +107,30 @@ LISTS = struct;
 RW_tot_count = 0;
 RW_List = RWList();
 
-for i = 1:50%days
-    %The counterbalancing repeats every 8 days
-    cb = mod(i,8);
-    cb(cb==0)=8;
-    
+for i = 1:2%days
+
     L = []; %the list of vertices for a single session
-    
-    %The random walk list is pulled from until its empty, then repeats.
-    %Each j goes through a single block and bounces back and forth between
-    %random walks and random jumps. Odd lists start with Random walks and
-    %even lists start with random jumps
-    corners = randperm(4);
-    block_seq = [1 1 0 0 1 1 0 0 1 1 0 0];
-    %Check whether list is odd or even
-    %if odd start with random walk
-    if rem(i,2) == 1
-        rw = 1;
-    else
-        rw = 0;
-    end
-    for j = 1:blocks
-        
-        if block_seq(j) == rw
-            
-            RW_tot_count = RW_tot_count + 1;
-            if RW_tot_count > numel(RW_List{1})
-            
-                %This resets and repeats the random walk lists in RW_List
-                %and randomizes the order of them
-                RW_List = RWList();
-                RW_tot_count = 1;
-            end
-            
-            %This allows for pseudorandom ordering of the corners of each start
-            %point for the random walk
-            if isempty(corners)
-                corners = randperm(4);
-            end
-       
-            NewL = RW_List{corners(end)}{RW_tot_count}; 
-            corners(end) = [];
-            
+    BL = cell(1,size(Traj_Ext_List,2)*prod(gridsize));
+    %This loops through each list in Traj_Ext_List. The 1 refers to
+    %vertical and the 2 refers to horizontal
+    for j = 1:8
+        if Traj_Ext_List(i,j) == 1
+            Lnew = List.Vert{Traj_Ext_Corner(i,j)}(:);
+            L = cat(1,L,Lnew);
+            BL = cat(1,L,repmat({'H'},size(Lnew)));
         else
-            NewL = randperm(prod(gridsize));
-            L = cat(1,L,NewL);
-            
-            
-            
-        for k = 1:4
-           
-            %this gets the new random walk path to be added to the session
-            %list L
-           NewL = RW_List{corners(k)}{RW_tot_count}; 
-            
-           L = cat(1,L,NewL); 
-        end     
+            Lnew = List.Horz{Traj_Ext_Corner(i,j)}(:);
+            L = cat(1,L,Lnew);
+            BL = cat(1,L,repmat({'V'},size(Lnew)));
+        end
     end    
-        
-    %This goes through and double checks the list to make sure there are no
-    %issues
-    [Error] = CheckList(L);
-    if Error
-        disp('Error with list')
-    end    
+
+%     %This goes through and double checks the list to make sure there are no
+%     %issues
+%     [Error] = CheckList(L);
+%     if Error
+%         disp('Error with list')
+%     end    
     
     %This next loop creates 8 counterbalanced lists which have the same path through
     %space yet rotated and flipped such that each corner is started from
@@ -194,7 +150,7 @@ for i = 1:50%days
     %Block information needs to be saved for data analysis purposes. This
     %can be output into a txt file. Yet this code is not written. Currently
     %all list and block information are saved as an .m file
-    BL = 'RW';
+    
     LISTS(i).List = L;
     LISTS(i).Block = BL;
     %save_ref_list(L,BL,RewardLoc,1,i);
