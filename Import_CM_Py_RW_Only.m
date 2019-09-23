@@ -1,4 +1,4 @@
-function [MAT] = Import_CM_Py(filename)
+function [MAT] = Import_CM_Py_RW_Only(filename)
 %This function imports cue map data for the CMv1 script
 %   Detailed explanation goes here
 
@@ -25,11 +25,10 @@ old_v = true;
 Reward_Zones = cell(1,6);
 %The file structure was changed on April 16th. The reward zones were added
 %to the top of the file
-if all(strncmp(header{1}, 'Reward',6))
+if all(strcmp(header{1}, 'Reward'))
    header2 = textscan(fileID, '%s', 3); 
    RZs = regexp(header2{1},'\d*','Match');
    Reward_Zones{Rat_Num} = cellfun(@str2double,RZs);
-   %Reward_Zones{Rat_Num} = cellfun(@(x) str2double(x) + 1,RZs);
    old_v = false;
 else
     %The following checks the reward zones for each rat to make sure they match
@@ -53,11 +52,8 @@ load('E:/Cue Map/Pi_030719_Run/Lists_RW/LISTS_DAT.mat')
 %are randomized for different calls to the Cue_Map_Counterbalance
 
 %Currently 'O' is for an output
-DAT.ins = cellfun(@(x) all(strcmp(x,'I')),Behavior_Data{2});
-DAT.outs = cellfun(@(x) all(strcmp(x,'O')),Behavior_Data{2});
-
-% DAT.ins = cellfun(@(x) all(strcmp(x,'O')),Behavior_Data{2});
-% DAT.outs = cellfun(@(x) all(strcmp(x,'I')),Behavior_Data{2});
+DAT.ins = cellfun(@(x) all(strcmp(x,'O')),Behavior_Data{2});
+DAT.outs = cellfun(@(x) all(strcmp(x,'I')),Behavior_Data{2});
 
 DAT.F = cellfun(@(x) all(strcmp(x,'F')),Behavior_Data{2});
 DAT.state = cellfun(@str2double,Behavior_Data{2});
@@ -96,13 +92,8 @@ for i = 1:numel(state_inds)-1
     else
         vertex = DAT.state(state_inds(i));
     end    
-    
-    rat_counter = rem(Rat_Num,8);
-    if rat_counter == 0
-        rat_counter = 8;
-    end    
-    ind_temp = CounterBalance_Key{rat_counter}(:,1) == vertex; %#ok<USENS>
-    vertex = CounterBalance_Key{rat_counter}(ind_temp,2);
+    ind_temp = CounterBalance_Key{Rat_Num}(:,1) == vertex; %#ok<USENS>
+    vertex = CounterBalance_Key{Rat_Num}(ind_temp,2);
     MAT.Rat = Rat_Num;
     MAT.Day = List_Num;
     

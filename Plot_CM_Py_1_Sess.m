@@ -2,8 +2,8 @@ function [] = Plot_CM_Py_1_Sess(days,rat)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
-Source_Folder = 'E:/Cue Map/Data/0319 Data';
-
+%Source_Folder = 'E:/Cue Map/Data/0319 Data';
+Source_Folder = 'E:/Cue Map/Data/0919 Data';
 
 File_End = '.txt';
 
