@@ -93,6 +93,17 @@ if old_v
 else
     Vertices = DAT.state(state_inds);
 end
+
+%%%%%%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%The end was padded
+%THere is a problem in which sessions ended before finishing the last cue of the list
+%This tags on the correct vertex at the end to allow for the
+%Block_Info script to work
+Vertices = padlist(Vertices);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %THe rats were counterbalanced according to the CueMapListTransform
 %script. To transform the vertices to the standard map run the inverse
 %transformation in the script
@@ -100,19 +111,22 @@ rat_counter = rem(Rat_Num,8);
     if rat_counter == 0
         rat_counter = 8;
     end    
-    
-MAT.Vertices = CueMapListTransform(Vertices,rat_counter,[12 12],true);
+
+
+Vertices = CueMapListTransform(Vertices,rat_counter,[12 12],true);
 
 MAT.Rat = Rat_Num;
 MAT.Day = List_Num;
 
-[MAT.Block,MAT.BlockSubType] = Block_Info(MAT.Vertices,[12 12]);
+[MAT.Block,MAT.BlockSubType] = Block_Info(Vertices,[12 12]);
 
-MAT.Block = cell(1,numel(state_inds)-1);
-
+%The last vertex is missing:
+MAT.Vertices = Vertices(1:end-1)';
+MAT.Block = MAT.Block(1:end-1);
+MAT.BlockSubType(end) = [];
 for i = 1:numel(state_inds)-1
     
-    MAT.Response{i} = response(Time_Stamps(state_inds(i)):Time_Stamps(state_inds(i+1)));
+    MAT.Response{i} = response(Time_Stamps(state_inds(i))+1:Time_Stamps(state_inds(i+1)));
     
     if check_rews
        MAT.Rewards(i) = any(vertex == (Rew_Zones{Rat_Num}));  
@@ -126,4 +140,17 @@ for i = 1:numel(state_inds)-1
     MAT.Pokes(i) = sum(diff(MAT.Response{i} == 1));
     MAT.Resp_Perc(i) = sum(MAT.Response{i}/numel(MAT.Response{i}));
 end
+fclose(fileID);
+end
 
+function [padded] = padlist(list)
+%THis assumes only one vertex is missing
+padded = list;
+for i = 1:144
+    
+    if sum(list == i) < ceil(numel(list)/144)
+        padded(end) = i;
+        return
+    end
+end 
+end

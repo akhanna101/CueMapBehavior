@@ -26,8 +26,8 @@ VertL = Vert(gridsize);
 
 block_length = prod(gridsize);
 
-BlockType = cell(numel(List),1);
-TrajType = NaN(numel(List),1);
+BlockType = cell(1,numel(List));
+TrajType = NaN(1,numel(List));
 %Loop through each block:
 for i = 1:ceil(numel(List)/block_length)
     
@@ -36,7 +36,13 @@ for i = 1:ceil(numel(List)/block_length)
     
     %get the range for the current block:
     bl_range = (i-1)*block_length + 1:i*block_length;
- 
+    
+%     %This if statement was added for situations in which the session did
+%     %not reach the 
+%     if i == ceil(numel(List)/block_length)
+%         bl_range = (i-1)*block_length + 1:numel(List);
+%     end
+    
     %Get the sublist for the current block:
     slist = List(bl_range);
     
