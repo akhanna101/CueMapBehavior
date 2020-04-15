@@ -22,7 +22,7 @@ header = textscan(fileID, '%s %s', 1);
 %This flag keeps track of whether the old version of the script is being
 %used, or the new version
 %old_v = true
-old_v = false
+old_v = false;
 
 Reward_Zones = cell(1,6);
 %The file structure was changed on April 16th. The reward zones were added

@@ -13,8 +13,8 @@ away_pixels = cell(length(rew_pix), num_away);
 mean_resp = zeros(1, num_away);
 SEM = zeros(1,num_away);
 
-rw =  strcmp('RW', MAT.Block);
-postR =  find(MAT.Rewards) + [0;1;2;3;4;5];
+rw =  strcmp('RW', MAT.Block) | strcmp('R', MAT.Block);
+postR =  find(MAT.Rewards) + [0:1:10]';
 postR = postR(:);
 exclude = true(1,3455);
 exclude(postR) = false;

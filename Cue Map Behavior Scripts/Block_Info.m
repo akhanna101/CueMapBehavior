@@ -78,7 +78,7 @@ for i = 1:ceil(numel(List)/block_length)
     %check to make sure the list moved only in one of the directions, if this
     %is not true for any vertice, this is a random jump
     if all(sum(difflist == direction_mat,2) == 1)
-        BlockType(bl_range) = repmat({'W'},block_length,1);
+        BlockType(bl_range) = repmat({'R'},block_length,1);
         TrajType(bl_range) = NaN(block_length,1);
     else
         %otherwise this is a random walk list

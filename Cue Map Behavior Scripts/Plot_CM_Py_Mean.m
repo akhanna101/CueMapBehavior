@@ -1,4 +1,4 @@
-function [] = Plot_CM_Py_1_Sess(days,rat,varargin)
+function [] = Plot_CM_Py_Mean(days,varargin)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -41,28 +41,42 @@ end
 
 %post reward keeps track of responses after a reward is given for n
 %vertices
-post_rew = 16;
-
+post_rew = 20;
+rat = [14 15 16 18];
 %This gets the days that should be used
 d_use = ismember(day,days);
-rat_use = rat_num == rat;
 
 Response = cell(1,3);
 Rewards = cell(1,3);
 Post_Response = cell(1,3);
 Post_Response_Rem = cell(1,3);
 
+
+for r = 1:numel(rat)
+    rat_use = rat_num == rat(r);
+    
 for i = find(d_use & rat_use)
-    filename = sprintf('%s/%s',Source_Folder,Filenames{i})
+    filename = sprintf('%s/%s',Source_Folder,Filenames{i});
     [MAT] = Import_CM_Py(filename);
-    [Resp,Rew,Post_Resp,Post_Resp_Rem] = Response_MAT(MAT,post_rew);
-    for j = 1:3
-        
-        Response{j} = cat(1,Response{j},Resp{j});
-        Rewards{j} =  cat(1,Rewards{j},Rew{j});
-        Post_Response{j} = cat(1,Post_Response{j},Post_Resp{j});
-        Post_Response_Rem{j} = cat(1,Post_Response_Rem{j},Post_Resp_Rem{j});
-    end
+    %This converst the response percentage to a 144 x n matrix
+    [Response{r}] = Response_MAT(MAT);
+    
+    %This gets logicals in the 144 x n format
+    L(r).R = Time2Vert(strncmp('R',MAT.Block,1),MAT);
+    L(r).V = Time2Vert(strncmp('V',MAT.Block,1),MAT);
+    L(r).H = Time2Vert(strncmp('H',MAT.Block,1),MAT);
+    L(r).Reward = Time2Vert(MAT.Rewards,MAT);
+    L(r).Post5 = Time2Vert(log_extend(MAT.Rewards,5),MAT);
+    L(r).Post_Rew = Time2Vert(log_extend(MAT.Rewards,post_rew),MAT);
+    L(r).Post_Rew_Rem = Time2Vert(~log_extend(MAT.Rewards,post_rew),MAT);
+    
+%     for j = 1:3
+%         
+%         Response{j} = cat(1,Response{j},Resp{j});
+%         Rewards{j} =  cat(1,Rewards{j},Rew{j});
+%         Post_Response{j} = cat(1,Post_Response{j},Post_Resp{j});
+%         Post_Response_Rem{j} = cat(1,Post_Response_Rem{j},Post_Resp_Rem{j});
+%     end
     
     plot_tr = false;
     plot_rw = false;
@@ -77,6 +91,7 @@ for i = find(d_use & rat_use)
         plot_rw = true;
     end
     break
+end
 end
 
 if plot_tr && plot_rw
@@ -113,12 +128,8 @@ if plot_tr && plot_rw
 end
 
 if ~plot_tr || plot_rw
-    
 
-    clims{1} = [0 max(Response{1})];
-    clims{2} = [0 max(Response{1})];
-    clims{3} = [0 max(Post_Response_Rem{1})];
-    Titles = {'Response', 'Post Reward', 'Resp - Post_Rew'};
+    Titles = {'Response', 'Post Reward', 'Post Reward Removed'};
     figure
     hold on
     for j = 1:3
@@ -126,16 +137,19 @@ if ~plot_tr || plot_rw
         switch j
             
             case 1   
-                curr_plot = Response{1};
+                curr_plot = lmean(Response,L,'R');
+                clims = [0 max(curr_plot)];
             case 2
-                curr_plot = Post_Response{1};
+                curr_plot = lmean(Response,L,'R','Post_Rew');
+                %keep clims the same
             case 3
-                curr_plot = Post_Response_Rem{1};
+                curr_plot = lmean(Response,L,'R','Post_Rew_Rem');
+                clims = [0 max(curr_plot)];
         end
 
     subplot(1,3,j)
     hold on
-    imagesc(reshape(curr_plot,12,12),clims{j})
+    imagesc(reshape(curr_plot,12,12),clims)
     set(gca, 'FontSize',16)
     title(Titles{j}, 'FontSize',16)
     xlabel('Tone Frequency', 'FontSize',16)
@@ -146,7 +160,7 @@ if ~plot_tr || plot_rw
     
     
     figure
-    b = bar3(reshape((Response{1} - Post_Resp{1}),12,12));
+    b = bar3(reshape(lmean(Response,L,'R','Post_Rew_Rem'),12,12));
     for k = 1:length(b)
         zdata = b(k).ZData;
         b(k).CData = zdata;
@@ -192,36 +206,81 @@ ylabel('Response Percentage','FontSize',16)
 end
 
 end
+
+    function [Resp] = Response_MAT(MAT, varargin)
+    %THis function converts the response rate from a time vector of
+    %vertices to a vertices x time matrix.
     
-    function [Resp,Rew,Post_Resp,Post_Resp_Rem] = Response_MAT(MAT,post_rew)
-    Blocks = {'R','V','H'};
-    use_range = false(size(MAT.Resp_Perc));
-    use_range(1:144*6) = true;
-    use_range = true(size(MAT.Resp_Perc));
+    %MAT.Vertices is a 1 x n vector indicating the vertex indicated at the ith
+    %entry of n total entries for the session
     
-    %This creates a filter for post-reward trials
-    post_range = log_extend(MAT.Rewards,post_rew);
+    %Resp is a 144 x (n/144) matrix with time defined by each vertice entry
     
-    for j = 1:3
-        Resp{j} = [];
-        Rew{j} = [];
-        Post_Resp{j} = [];
-        Post_Resp_Rem{j} = [];
-        bl = strncmp(Blocks{j},MAT.Block,1);
+    %varargin is a logical vector (1 x n) of which vertices to include in the output 
+    if isempty(varargin)
+        log_use = true(1,numel(MAT.Vertices));
+    else
+        log_use = varargin{1};
+    end    
+        Resp = zeros(144,ceil(numel(MAT.Vertices)/144));
+        
         for i = 1:144
             %Edit this to get all trials
-            v = MAT.Vertices == i;
+            v = MAT.Vertices == i;  
             
-            Resp{j}(i) = mean(MAT.Resp_Perc(bl & v & use_range));
-            Rew{j}(i) = mean(MAT.Rewards(bl & v & use_range));  
-            Post_Resp{j}(i) = mean(MAT.Resp_Perc(bl & v & use_range & post_range));
-            Post_Resp_Rem{j}(i) = mean(MAT.Resp_Perc(bl & v & use_range & ~post_range));
+            Resp(i,1:sum(v)) = MAT.Resp_Perc(v & log_use);
+
         end    
-        %Set any nans to zero
-        Post_Resp{j}(isnan(Post_Resp{j})) = 0;
+
     end 
     
-    end
+    function [L_2D] = Time2Vert(Logical,MAT)
+    %THis function converts a logical vector from a time vector of
+    %vertices to a vertices x time matrix.
+    
+    %MAT.Vertices is a 1 x n vector indicating the vertex indicated at the ith
+    %entry of n total entries for the session
+    
+    %L_2D is a 144 x (n/144) matrix with time defined by each vertice entry
+        L_2D = false(144,ceil(numel(MAT.Vertices)/144));
+        
+        for i = 1:144
+            %Edit this to get all trials
+            v = MAT.Vertices == i;  
+            
+            L_2D(i,1:sum(v)) = Logical(v);
+        end
+    end    
+    
+%     function [Resp,Rew,Post_Resp,Post_Resp_Rem] = Response_MAT(MAT,post_rew)
+%     Blocks = {'R','V','H'};
+%     use_range = false(size(MAT.Resp_Perc));
+%     use_range(1:144*6) = true;
+%     use_range = true(size(MAT.Resp_Perc));
+%     
+%     %This creates a filter for post-reward trials
+%     post_range = log_extend(MAT.Rewards,post_rew);
+%     
+%     for j = 1:3
+%         Resp{j} = [];
+%         Rew{j} = [];
+%         Post_Resp{j} = [];
+%         Post_Resp_Rem{j} = [];
+%         bl = strncmp(Blocks{j},MAT.Block,1);
+%         for i = 1:144
+%             %Edit this to get all trials
+%             v = MAT.Vertices == i;
+%             
+%             Resp{j}(i) = mean(MAT.Resp_Perc(bl & v & use_range));
+%             Rew{j}(i) = mean(MAT.Rewards(bl & v & use_range));  
+%             Post_Resp{j}(i) = mean(MAT.Resp_Perc(bl & v & use_range & post_range));
+%             Post_Resp_Rem{j}(i) = mean(MAT.Resp_Perc(bl & v & use_range & ~post_range));
+%         end    
+%         %Set any nans to zero
+%         Post_Resp{j}(isnan(Post_Resp{j})) = 0;
+%     end 
+%     
+%     end
     
         
     function [Resp,Rew] = Approach_MAT(MAT,Blocks)
@@ -258,3 +317,29 @@ end
     end        
     
     end
+    
+%     function [meanV] = lmean(Response,Logical_MAT)
+%     %This function takes the mean for each vertice (across rows) based on the logical
+%     %matrix of which trials to include
+%     Response(~Logical_MAT) = NaN;
+%     meanV = nanmean(Response,2);
+%     end
+    
+function [meanV] = lmean(Response,Logical_MAT,varargin)
+%This function takes the mean for each vertice (across rows) based on the logical
+%matrix of which trials to include
+meansMAT = nan(144,numel(Response));
+for i = 1:numel(Response)
+    
+    use = true(size(Response{1}));
+    for j = 1:numel(varargin)
+        use = use & Logical_MAT(i).(varargin{j});
+    end
+    
+    resp = Response{i};
+    resp(~use) = NaN;
+    meansMAT(:,i) = nanmean(resp,2);
+end
+meanV = nanmean(meansMAT,2);
+
+end
