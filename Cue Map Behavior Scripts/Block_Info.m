@@ -45,10 +45,11 @@ for i = 1:ceil(numel(List)/block_length)
     
     %Get the sublist for the current block:
     slist = List(bl_range);
-    
+
+        
     %Now determine which block type the current portion of the list is:
     %Check Horizontal blocks:
-    for j = 1:8
+    for j = 1:4
         if all(slist == CueMapListTransform(HorzL,j,gridsize))
             BlockType(bl_range) = repmat({'H'},block_length,1);
             list_true = true;
@@ -56,10 +57,10 @@ for i = 1:ceil(numel(List)/block_length)
             break
         end
     end    
-    if list_true; break; end
+    if list_true; continue; end
     
     %check vertical lists
-    for j = 1:8
+    for j = 1:4
         if all(slist == CueMapListTransform(VertL,j,gridsize))
             BlockType(bl_range) = repmat({'V'},block_length,1);
             list_true = true;
@@ -67,7 +68,7 @@ for i = 1:ceil(numel(List)/block_length)
             break
         end
     end    
-    if list_true; break; end
+    if list_true; continue; end
     
     %check whether there is a random jump
     difflist = diff(slist);

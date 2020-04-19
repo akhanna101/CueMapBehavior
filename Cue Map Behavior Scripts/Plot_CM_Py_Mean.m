@@ -159,17 +159,17 @@ if ~plot_tr || plot_rw
     end
     
     
-    figure
-    b = bar3(reshape(lmean(Response,L,'R','Post_Rew_Rem'),12,12));
-    for k = 1:length(b)
-        zdata = b(k).ZData;
-        b(k).CData = zdata;
-        b(k).FaceColor = 'interp';
-    end
-    set(gca, 'FontSize',16)
-    title(Titles{j}, 'FontSize',16)
-    xlabel('Tone Frequency', 'FontSize',16)
-    ylabel('Click Frequency', 'FontSize',16)
+%     figure
+%     b = bar3(reshape(lmean(Response,L,'R','Post_Rew_Rem'),12,12));
+%     for k = 1:length(b)
+%         zdata = b(k).ZData;
+%         b(k).CData = zdata;
+%         b(k).FaceColor = 'interp';
+%     end
+%     set(gca, 'FontSize',16)
+%     title(Titles{j}, 'FontSize',16)
+%     xlabel('Tone Frequency', 'FontSize',16)
+%     ylabel('Click Frequency', 'FontSize',16)
     
 end
 %figure
@@ -192,18 +192,18 @@ ylabel('Response Percentage','FontSize',16)
 
 end
 
-if plot_rw
-    
-figure
-hold on
-errorbar(-60:1:59,mean(App_RW)*100,ste(App_RW)*100)
-stairs(-.5 + -60:1:59, -10 + mean(App_RW_Rew)*20,'k','linewidth',1.5)
-set(gca, 'XLim', [-60 59], 'FontSize',16, 'box','off')
-plot([0 0], [0 60], '--k')
-xlabel('Trials - Centered at Reward', 'FontSize',16)
-ylabel('Response Percentage','FontSize',16)
-
-end
+% if plot_rw
+%     
+% figure
+% hold on
+% errorbar(-60:1:59,mean(App_RW)*100,ste(App_RW)*100)
+% stairs(-.5 + -60:1:59, -10 + mean(App_RW_Rew)*20,'k','linewidth',1.5)
+% set(gca, 'XLim', [-60 59], 'FontSize',16, 'box','off')
+% plot([0 0], [0 60], '--k')
+% xlabel('Trials - Centered at Reward', 'FontSize',16)
+% ylabel('Response Percentage','FontSize',16)
+% 
+% end
 
 end
 
