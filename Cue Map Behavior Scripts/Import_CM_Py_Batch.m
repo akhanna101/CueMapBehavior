@@ -21,10 +21,10 @@ File_End = '.txt';
 %.txt files and files which begin with group
 Filenames = {AllFiles.name};
 
-% TXT_File = ~cellfun(@isempty, (strfind(Filenames, File_End)))...
-%     & (~cellfun(@isempty, (strfind(Filenames, String_Identifier{1})))); %| ~cellfun(@isempty, (strfind(Filenames, String_Identifier{2}))));
+TXT_File = ~cellfun(@isempty, (strfind(Filenames, File_End)))...
+     & (~cellfun(@isempty, (strfind(Filenames, String_Identifier{1})))); %| ~cellfun(@isempty, (strfind(Filenames, String_Identifier{2}))));
 
-TXT_File = (~cellfun(@isempty, (strfind(Filenames, String_Identifier{1})))); %| ~cellfun(@isempty, (strfind(Filenames, String_Identifier{2}))));
+%TXT_File = (~cellfun(@isempty, (strfind(Filenames, String_Identifier{1})))); %| ~cellfun(@isempty, (strfind(Filenames, String_Identifier{2}))));
 
 %This reduces the filenames to those which are putative data files
 Filenames = Filenames(TXT_File); 
@@ -58,16 +58,54 @@ for i = 1:numel(New_Sessions)
 
     ind = ind + 1;
     
-    M.Rat(1,ind) = MAT.Rat;
-    M.Day(1,ind) = MAT.Day;
-    M.Block(1,ind) = {MAT.Block};
-    M.BlockSubType(1,ind) = {MAT.BlockSubType};
-    M.Vertices(1,ind) = {MAT.Vertices};
-    M.Response(1,ind) = {MAT.Response};
-    M.Rewards(1,ind) = {MAT.Rewards};
-    M.Pokes(1,ind) = {MAT.Pokes};
-    M.Resp_Perc(1,ind) = {MAT.Resp_Perc};
-    M.Filename(1,ind) = {New_Sessions{i}};
+    M(1,ind).Rat = uint8(MAT.Rat);
+    M(1,ind).Day = uint8(MAT.Day);
+    %To reduce memory, block is now saved as an 8bit value
+    %Horizontal = 1
+    %Vertical = 2
+    %Random_Walk = 3
+    %Random_Jump = 4
+    Blockint = uint8(zeros(size(MAT.Block)));
+    Blockint(strcmp('H',MAT.Block)) = 1;
+    Blockint(strcmp('V',MAT.Block)) = 2;
+    Blockint(strcmp('R',MAT.Block)) = 3;
+    Blockint(strcmp('J',MAT.Block)) = 4;
+    
+    M(1,ind).Block = Blockint;
+    M(1,ind).BlockSubType = uint8(MAT.BlockSubType);
+    M(1,ind).Vertices = uint16(MAT.Vertices);
+   % M(1,ind).Response(1,ind) = single(MAT.Response);
+    M(1,ind).Rewards = MAT.Rewards;
+    M(1,ind).Pokes = uint8(MAT.Pokes);
+    M(1,ind).Resp_Perc = single(MAT.Resp_Perc);
+    M(1,ind).Filename = New_Sessions{i};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Uncomment below code to store data using cell arrays rather than structures
+
+%     M{ind}{1} = uint8(MAT.Rat);
+%     M{ind}{2} = uint8(MAT.Day);
+%     %To reduce memory, block is now saved as an 8bit value
+%     %Horizontal = 1
+%     %Vertical = 2
+%     %Random_Walk = 3
+%     %Random_Jump = 4
+%     Blockint = uint8(zeros(size(MAT.Block)));
+%     Blockint(strcmp('H',MAT.Block)) = 1;
+%     Blockint(strcmp('V',MAT.Block)) = 2;
+%     Blockint(strcmp('R',MAT.Block)) = 3;
+%     Blockint(strcmp('J',MAT.Block)) = 4;
+%     
+%     M{ind}{3} = Blockint;
+%     M{ind}{4} = uint8(MAT.BlockSubType);
+%     M{ind}{5} = uint16(MAT.Vertices);
+%    % M(1,ind).Response(1,ind) = single(MAT.Response);
+%     M{ind}{6} = MAT.Rewards;
+%     M{ind}{7} = uint8(MAT.Pokes);
+%     M{ind}{8} = single(MAT.Resp_Perc);
+%     M{ind}{9} = New_Sessions{i};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 end
 save('Cue_Map_Data.mat','M');
 clear M

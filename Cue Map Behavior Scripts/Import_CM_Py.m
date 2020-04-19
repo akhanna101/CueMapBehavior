@@ -139,6 +139,7 @@ for i = 1:numel(state_inds)-1
     end    
     MAT.Pokes(i) = sum(diff(MAT.Response{i} == 1));
     MAT.Resp_Perc(i) = sum(MAT.Response{i}/numel(MAT.Response{i}));
+
 end
 fclose(fileID);
 end
