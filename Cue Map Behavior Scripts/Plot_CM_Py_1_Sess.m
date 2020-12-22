@@ -3,8 +3,9 @@ function [] = Plot_CM_Py_1_Sess(days,rat,varargin)
 %   Detailed explanation goes here
 
 %Source_Folder = 'E:/Cue Map/Data/0319 Data';
+Source_Folder = 'C:/Users/gardnermp/Data/Cue Map/Data/0919 Data';
 %Source_Folder = 'C:/Users/khannaa3/Desktop/Cue Map MATLAB/Behavioral Data Aug 2019/Recorded Animals';
-Source_Folder = sprintf('%s%s',pwd,'/Recorded Animals');
+%Source_Folder = sprintf('%s%s',pwd,'/Recorded Animals');
 File_End = '.txt';
 
 

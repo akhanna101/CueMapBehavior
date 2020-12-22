@@ -508,7 +508,7 @@ function [] = mean_resp_approach_pixels_away(rats_use, days_use)
         ns = 0;
         
 pre_post = [10 10];
-dist_away = 2;
+dist_away = 3;
 dist_other_rew = 10;
 post_reward = 10;
    
@@ -548,19 +548,23 @@ post_reward = 10;
            hold on
            subplot(2,4,ns)
             stairs(-pre_post(1):pre_post(2),Mean_Approach(k+1,:),'Color',Colors1(k+1,:))
+%             if k == 0
+%                 hold on
+%                 stairs(-pre_post(1):pre_post(2),Mean_Control(k+1,:),'Color',Colors2(k+1,:))
+%             end    
             set(gca, 'YLim',[0 .5], 'FontSize',10)
             title(sprintf('%s %s','Day', num2str(j)), 'FontSize',10)
              xlabel('Pixels Away', 'FontSize',10)
              ylabel('Response %', 'FontSize',10)
              
-             legend(legend_names,'Box','off')
-           subplot(2,4,ns+4) 
-            stairs(-pre_post(1):pre_post(2),Mean_Control(k+1,:),'Color',Colors2(k+1,:))
-            set(gca, 'YLim',[0 .5], 'FontSize',10)
-            title(sprintf('%s %s','Day', num2str(j)), 'FontSize',10)
-             xlabel('Pixels Away', 'FontSize',10)
-             ylabel('Response %', 'FontSize',10)
-             legend(legend_names,'Box','off')
+%              legend(legend_names,'Box','off')
+%            subplot(2,4,ns+4) 
+%             stairs(-pre_post(1):pre_post(2),Mean_Control(k+1,:),'Color',Colors2(k+1,:))
+%             set(gca, 'YLim',[0 .5], 'FontSize',10)
+%             title(sprintf('%s %s','Day', num2str(j)), 'FontSize',10)
+%              xlabel('Pixels Away', 'FontSize',10)
+%              ylabel('Response %', 'FontSize',10)
+%              legend(legend_names,'Box','off')
 
                 end
             

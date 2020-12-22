@@ -18,19 +18,22 @@ List_Num = str2double(nums{2});
 %open the file
 fileID = fopen(filename);
 header = textscan(fileID, '%s %s', 1);
+%header = textscan(fileID, '%s %s %s %s %s', 1);
 
 %This flag keeps track of whether the old version of the script is being
 %used, or the new version
 %old_v = true
 old_v = false;
 
-Reward_Zones = cell(1,6);
+%Reward_Zones = cell(1,6);
 %The file structure was changed on April 16th. The reward zones were added
 %to the top of the file
 if all(strncmp(header{1}, 'Reward',6))
+   %In some runs, no rewards were included in the session. For these runs,
+   %the future reward zones can be added, otherwise, they will be skipped.
    header2 = textscan(fileID, '%s', 3); 
    RZs = regexp(header2{1},'\d*','Match');
-   Reward_Zones{Rat_Num} = cellfun(@str2double,RZs);
+   Rew_Zones{Rat_Num} = cellfun(@str2double,RZs);
    %Reward_Zones{Rat_Num} = cellfun(@(x) str2double(x) + 1,RZs);
    old_v = false;
 else
@@ -59,8 +62,8 @@ Behavior_Data = textscan(fileID, '%f %s');
 DAT.ins = cellfun(@(x) all(strcmp(x,'O')),Behavior_Data{2});
 DAT.outs = cellfun(@(x) all(strcmp(x,'I')),Behavior_Data{2});
 
-% DAT.ins = cellfun(@(x) all(strcmp(x,'O')),Behavior_Data{2});
-% DAT.outs = cellfun(@(x) all(strcmp(x,'I')),Behavior_Data{2});
+ %DAT.ins = cellfun(@(x) all(strcmp(x,'I')),Behavior_Data{2});
+ %DAT.outs = cellfun(@(x) all(strcmp(x,'O')),Behavior_Data{2});
 
 DAT.F = cellfun(@(x) all(strcmp(x,'F')),Behavior_Data{2});
 DAT.state = cellfun(@str2double,Behavior_Data{2});

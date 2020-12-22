@@ -11,8 +11,12 @@ function [] = Import_CM_Py_Batch()
 %Find the potential files to be added
 Source_Folder = pwd;
 Data_Folder = '/Recorded Animals/';
+%Data_Folder = 'C:/Users/gardnermp/Data/Cue Map/Data/0919 Data/';
+disp(Data_Folder)
+
 %This gets all the files from the directory
-AllFiles = dir(sprintf('%s%s',Source_Folder,Data_Folder));
+%AllFiles = dir(sprintf('%s%s',Source_Folder,Data_Folder));
+AllFiles = dir(Data_Folder);
 
 String_Identifier = {'CM'};
 File_End = '.txt';
